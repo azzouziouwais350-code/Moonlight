@@ -1,0 +1,7 @@
+// Fichier genere par CMake a partir de version.hpp.in -- ne pas editer la copie generee.
+#pragma once
+
+#define MOONLIGHT_VERSION_MAJOR @PROJECT_VERSION_MAJOR@
+#define MOONLIGHT_VERSION_MINOR @PROJECT_VERSION_MINOR@
+#define MOONLIGHT_VERSION_PATCH @PROJECT_VERSION_PATCH@
+#define MOONLIGHT_VERSION_STRING "@PROJECT_VERSION@"

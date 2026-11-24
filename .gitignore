@@ -1,0 +1,46 @@
+# --- Build ---
+build/
+cmake-build-*/
+CMakeUserPresets.json
+compile_commands.json
+.cache/
+
+# --- IDE ---
+.vscode/
+.idea/
+*.swp
+
+# --- Android / Gradle ---
+android/.gradle/
+android/build/
+android/app/build/
+android/app/.cxx/
+android/local.properties
+*.apk
+*.aab
+
+# --- iOS / Xcode ---
+ios/build/
+ios/DerivedData/
+*.xcuserstate
+xcuserdata/
+
+# --- Donnees du jeu original : ne JAMAIS les versionner ---
+# MOONLIGHT ne distribue aucun contenu du jeu. Le joueur fournit son propre dump.
+*.iso
+*.wbfs
+*.rvz
+*.gcm
+*.wad
+*.dol
+*.rel
+*.arc
+*.szs
+*.bnr
+/game-data/
+/dump/
+/extracted/
+
+# --- Divers ---
+.DS_Store
+Thumbs.db
