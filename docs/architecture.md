@@ -77,7 +77,8 @@ Created ──initialize()──► Initialized ──shutdown()──► ShutDo
 - `engine/` produit la bibliothèque statique `moonlight_engine` (alias `moonlight::engine`) ; les en-têtes s'incluent par `#include "core/engine.hpp"`.
 - La cible d'interface `moonlight_warnings` centralise les avertissements (`-Wall -Wextra -Wpedantic -Wshadow -Wconversion`).
 - `tools/smoke_test` produit `moonlight_smoke_test`, enregistré dans CTest.
-- *Prévu :* fichiers de toolchain Android (NDK) pilotés par Gradle, toolchain iOS, intégration continue.
+- CI GitHub Actions (`.github/workflows/ci.yml`) : GCC 13/14 et Clang 18, Debug/Release, plus ASan/UBSan, sur Ubuntu 24.04 x86-64 uniquement (voir le README pour la portée exacte).
+- *Prévu :* fichiers de toolchain Android (NDK) pilotés par Gradle, toolchain iOS, CI ARM64 et Android.
 
 ## 5. Tests
 

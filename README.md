@@ -1,5 +1,7 @@
 # Moonlight
 
+[![CI](https://github.com/azzouziouwais350-code/Moonlight/actions/workflows/ci.yml/badge.svg)](https://github.com/azzouziouwais350-code/Moonlight/actions/workflows/ci.yml)
+
 **MOONLIGHT** est un projet de réimplémentation indépendante de *Zero: Tsukihami no Kamen* (Project Zero 4, version japonaise Wii, identifiant `R4ZJ01`), destiné à devenir une application mobile Android puis iOS, avec un moteur C++ réimplémenté.
 
 > **Version 0.1.0 : fondation technique uniquement.**
@@ -70,6 +72,37 @@ RESULT: PASS
 
 Les builds in-source sont refusés par CMake.
 
+## Intégration continue (CI)
+
+Le workflow [`.github/workflows/ci.yml`](.github/workflows/ci.yml) s'exécute sur **chaque Pull Request** et **chaque push sur `main`** (et manuellement via *workflow_dispatch*). Le badge en tête de ce fichier reflète l'état de la dernière exécution sur `main`.
+
+Toutes les configurations utilisent CMake + Ninja via les presets du dépôt, avec les **avertissements traités comme erreurs**, puis exécutent les tests CTest. Elles tournent sur `ubuntu-24.04` (x86-64).
+
+| Job | Compilateurs | Configurations |
+|---|---|---|
+| `build-test` | GCC 13, GCC 14, Clang 18 | Debug et Release (6 combinaisons) |
+| `sanitize` | GCC 13, Clang 18 | Debug + AddressSanitizer + UBSan (UBSan arrête le test à la première erreur) |
+
+Chaque combinaison est indépendante (`fail-fast: false`) : un échec n'en masque pas un autre.
+
+### Ce que la CI ne valide pas
+
+- **Pas d'ARM64 :** aucun runner ARM64 n'est utilisé ; la compatibilité ARM64 n'est ni testée ni garantie.
+- **Pas d'Android ni d'iOS :** la CI ne compile ni projet Gradle, ni NDK, ni JNI, ni Vulkan, ni Metal (ils n'existent pas encore). Un CI vert ne dit **rien** sur Android.
+- **Pas de test de jeu :** seul le squelette du moteur (`engine/core`) est testé, via le test de fumée.
+- **Pas de Windows ni de macOS.**
+- GCC 14 et Clang 18 sont les versions fournies par l'image `ubuntu-24.04` au moment de l'écriture ; si GitHub change cette image, la matrice devra être ajustée.
+
+Pour reproduire une combinaison localement, utilisez les mêmes commandes que la CI, par exemple :
+
+```bash
+CC=clang-18 CXX=clang++-18 cmake --preset release
+cmake --build --preset release
+ctest --preset release
+```
+
+(Les presets écrivent dans `build/<preset>` : supprimez ce dossier entre deux compilateurs différents.)
+
 ## Structure du dépôt
 
 ```
@@ -98,7 +131,7 @@ Détails dans [`docs/architecture.md`](docs/architecture.md).
 - **Aucun jeu :** rien du jeu original n'est lu, décodé ni exécuté. Aucune ressource n'est chargée.
 - **Pas de rendu, d'audio, d'entrées, de sauvegardes, de langues ni de mods :** les dossiers correspondants sont des emplacements documentés, sans code.
 - **Android et iOS non démarrés :** aucun projet Gradle, aucun code JNI, aucun backend Vulkan ou Metal. La compatibilité Vulkan reste à vérifier.
-- **Plateformes vérifiées :** Ubuntu 24.04 sur x86-64 (GCC 13 et Clang 18, Debug, Release, ASan/UBSan). **Non vérifié** : Linux ARM64, et GitHub Codespaces lui-même (même famille d'OS, mais l'exécution n'y a pas été testée).
-- **Pas d'intégration continue** pour l'instant.
+- **Plateformes vérifiées :** Ubuntu 24.04 sur x86-64 (GCC 13/14 et Clang 18, Debug, Release, ASan/UBSan), en local et par la CI (voir plus haut). **Non vérifié** : Linux ARM64, et GitHub Codespaces lui-même (même famille d'OS, mais l'exécution n'y a pas été testée).
+- **La CI ne couvre que x86-64 et le moteur de base** (voir « Ce que la CI ne valide pas »).
 - Le moteur n'est pas thread-safe (seul `Logger` l'est).
 - Aucune compatibilité d'API ou d'ABI n'est promise avant la 1.0.
