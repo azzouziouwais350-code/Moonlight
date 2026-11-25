@@ -69,7 +69,8 @@ inline int finish(const char* suiteName) {
 #define CHECK_OK(expression)                                                         \
     do {                                                                             \
         ++::moonlight::testing::counters().checks;                                   \
-        const auto& checkOkStatus_ = ::moonlight::testing::statusOf(expression);     \
+        auto&& checkOkValue_ = (expression); /* prolonge la vie d'un temporaire */   \
+        const auto& checkOkStatus_ = ::moonlight::testing::statusOf(checkOkValue_);  \
         if (!checkOkStatus_.isOk()) {                                                \
             ::moonlight::testing::reportFailure(__FILE__, __LINE__, #expression,     \
                                                 &checkOkStatus_);                    \
@@ -79,7 +80,8 @@ inline int finish(const char* suiteName) {
 #define CHECK_CODE(expression, expectedCode)                                         \
     do {                                                                             \
         ++::moonlight::testing::counters().checks;                                   \
-        const auto& checkCodeStatus_ = ::moonlight::testing::statusOf(expression);   \
+        auto&& checkCodeValue_ = (expression); /* prolonge la vie d'un temporaire */ \
+        const auto& checkCodeStatus_ = ::moonlight::testing::statusOf(checkCodeValue_); \
         if (checkCodeStatus_.code() != (expectedCode)) {                             \
             ::moonlight::testing::reportFailure(__FILE__, __LINE__,                  \
                                                 #expression " == " #expectedCode,    \

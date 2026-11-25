@@ -19,3 +19,4 @@ function(moonlight_add_test name source)
 endfunction()
 
 moonlight_add_test(moonlight_core_test core/core_test.cpp moonlight::core)
+moonlight_add_test(moonlight_logger_test core/logger_test.cpp moonlight::core)

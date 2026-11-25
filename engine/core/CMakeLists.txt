@@ -11,7 +11,8 @@ configure_file(
 
 add_library(moonlight_core STATIC
     engine.cpp
-    log.cpp)
+    log.cpp
+    log_sinks.cpp)
 add_library(moonlight::core ALIAS moonlight_core)
 
 target_include_directories(moonlight_core PUBLIC
