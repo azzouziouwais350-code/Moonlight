@@ -7,6 +7,7 @@
 
 #include "check.hpp"
 #include "core/error.hpp"
+#include "core/path_util.hpp"
 #include "core/result.hpp"
 
 using namespace moonlight::core;
@@ -84,6 +85,30 @@ void testResultFromOkStatusIsAnError() {
     CHECK_CODE(result, ErrorCode::InvalidState);
 }
 
+void testPathUtil() {
+    CHECK(joinPath("a", "b") == "a/b");
+    CHECK(joinPath("a/", "b") == "a/b");
+    CHECK(joinPath("", "b") == "b");
+    CHECK(joinPath("a", "") == "a");
+    CHECK(joinPath("/", "b") == "/b");
+
+    CHECK(parentPath("a/b") == "a");
+    CHECK(parentPath("b").empty());
+    CHECK(parentPath("/b") == "/");
+    CHECK(parentPath("/") == "/");
+    CHECK(parentPath("/a/b/c") == "/a/b");
+
+    CHECK(isStrictlyInside("/data", "/data/x"));
+    CHECK(isStrictlyInside("/data", "/data/x/y"));
+    CHECK(!isStrictlyInside("/data", "/data"));          // egal : pas "strictement"
+    CHECK(!isStrictlyInside("/data", "/database"));      // composante entiere seulement
+    CHECK(!isStrictlyInside("/data", "/dat"));
+    CHECK(!isStrictlyInside("/data", "/other/data/x"));
+    CHECK(isStrictlyInside("/", "/x"));                  // racine du systeme de fichiers
+    CHECK(!isStrictlyInside("/", "/"));
+    CHECK(!isStrictlyInside("", "/x"));
+}
+
 }  // namespace
 
 int main() {
@@ -94,5 +119,6 @@ int main() {
     RUN_TEST(testResultFailure);
     RUN_TEST(testResultMoveOnlyAndContainers);
     RUN_TEST(testResultFromOkStatusIsAnError);
+    RUN_TEST(testPathUtil);
     return moonlight::testing::finish("moonlight_core_test");
 }

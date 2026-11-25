@@ -18,5 +18,15 @@ function(moonlight_add_test name source)
     add_test(NAME ${name} COMMAND ${name})
 endfunction()
 
+# Doubles de test des interfaces de platform (systeme de fichiers en memoire).
+add_library(moonlight_test_doubles STATIC support/memory_filesystem.cpp)
+target_include_directories(moonlight_test_doubles PUBLIC
+    ${CMAKE_CURRENT_SOURCE_DIR}/support)
+target_link_libraries(moonlight_test_doubles
+    PUBLIC  moonlight::platform
+    PRIVATE moonlight_warnings)
+
 moonlight_add_test(moonlight_core_test core/core_test.cpp moonlight::core)
 moonlight_add_test(moonlight_logger_test core/logger_test.cpp moonlight::core)
+moonlight_add_test(moonlight_platform_test platform/platform_test.cpp
+    moonlight::platform moonlight_test_doubles)
