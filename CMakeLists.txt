@@ -47,3 +47,6 @@ endif()
 
 add_subdirectory(engine)
 add_subdirectory(tools)
+if(MOONLIGHT_BUILD_TESTS)
+    add_subdirectory(tests)
+endif()

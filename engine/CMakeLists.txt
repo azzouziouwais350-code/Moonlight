@@ -1,28 +1,21 @@
-# Bibliotheque du moteur MOONLIGHT.
+# Moteur MOONLIGHT : une bibliotheque statique par module.
 #
-# En 0.1.0 seul le module "core" existe reellement. Les autres dossiers
-# (graphics, audio, input, ...) ne contiennent pas encore de code ; ils seront
-# ajoutes a cette bibliotheque (ou a leurs propres cibles) au moment ou ils
-# seront reellement implementes.
+# Graphe de dependances (impose aussi par tools/check_layering.cmake) :
+#
+#     assets ---> platform ---> core
+#
+# Les autres dossiers (graphics, audio, input, game, localization, saves, mods)
+# ne contiennent pas encore de code et n'ont donc pas encore de cible.
+#
+# Tous les modules s'incluent depuis la racine engine/ : #include "core/log.hpp".
 
-find_package(Threads REQUIRED)
+set(MOONLIGHT_ENGINE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 
-# Genere <build>/generated/core/version.hpp a partir de la version du projet.
-configure_file(
-    core/version.hpp.in
-    ${CMAKE_CURRENT_BINARY_DIR}/generated/core/version.hpp
-    @ONLY)
+add_subdirectory(core)
 
-add_library(moonlight_engine STATIC
-    core/engine.cpp
-    core/log.cpp)
+# Cible agregat conservee pour compatibilite : le code existant qui lie
+# moonlight::engine continue de fonctionner et recoit tous les modules.
+add_library(moonlight_engine INTERFACE)
 add_library(moonlight::engine ALIAS moonlight_engine)
-
-target_include_directories(moonlight_engine PUBLIC
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/generated>)
-
-target_compile_features(moonlight_engine PUBLIC cxx_std_20)
-target_link_libraries(moonlight_engine
-    PUBLIC  Threads::Threads
-    PRIVATE moonlight_warnings)
+target_link_libraries(moonlight_engine INTERFACE
+    moonlight::core)
