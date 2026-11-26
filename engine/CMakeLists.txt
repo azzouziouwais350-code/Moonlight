@@ -13,6 +13,7 @@ set(MOONLIGHT_ENGINE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 
 add_subdirectory(core)
 add_subdirectory(platform)
+add_subdirectory(assets)
 
 # Cible agregat conservee pour compatibilite : le code existant qui lie
 # moonlight::engine continue de fonctionner et recoit tous les modules.
@@ -20,4 +21,5 @@ add_library(moonlight_engine INTERFACE)
 add_library(moonlight::engine ALIAS moonlight_engine)
 target_link_libraries(moonlight_engine INTERFACE
     moonlight::core
-    moonlight::platform)
+    moonlight::platform
+    moonlight::assets)

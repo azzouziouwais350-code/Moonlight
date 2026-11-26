@@ -32,3 +32,5 @@ moonlight_add_test(moonlight_platform_test platform/platform_test.cpp
     moonlight::platform moonlight_test_doubles)
 moonlight_add_test(moonlight_config_test core/config_test.cpp
     moonlight::platform moonlight_test_doubles)
+moonlight_add_test(moonlight_resource_test assets/resource_test.cpp
+    moonlight::assets moonlight_test_doubles)

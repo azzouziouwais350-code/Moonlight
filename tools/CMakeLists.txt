@@ -10,4 +10,9 @@ if(MOONLIGHT_BUILD_TESTS)
     add_test(NAME moonlight_layering_check
         COMMAND ${CMAKE_COMMAND} -DSOURCE_DIR=${PROJECT_SOURCE_DIR}
                 -P ${CMAKE_CURRENT_SOURCE_DIR}/check_layering.cmake)
+
+    # Aucune donnee du jeu original dans le depot (filet de securite).
+    add_test(NAME moonlight_no_game_data_check
+        COMMAND ${CMAKE_COMMAND} -DSOURCE_DIR=${PROJECT_SOURCE_DIR}
+                -P ${CMAKE_CURRENT_SOURCE_DIR}/check_no_game_data.cmake)
 endif()
