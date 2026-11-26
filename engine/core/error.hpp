@@ -6,10 +6,18 @@
 namespace moonlight::core {
 
 /// Categories d'erreurs du moteur. A etendre uniquement quand un besoin reel apparait.
+///
+/// Les valeurs existantes ne changent pas ; les nouvelles sont ajoutees a la fin
+/// (0.2.0) afin de ne pas perturber le code qui les connait deja.
 enum class ErrorCode {
     None,             ///< Pas d'erreur.
     InvalidState,     ///< Operation appelee dans un etat du cycle de vie incorrect.
     InvalidArgument,  ///< Argument ou configuration invalide.
+    NotFound,         ///< Fichier, dossier ou ressource inexistant.
+    IoError,          ///< Echec d'une operation d'entree/sortie.
+    ParseError,       ///< Donnees (ex. fichier de configuration) mal formees.
+    AccessDenied,     ///< Acces refuse (permissions, ou chemin sortant d'une zone autorisee).
+    TooLarge,         ///< Donnees plus grandes que la limite autorisee.
 };
 
 constexpr const char* toString(ErrorCode code) noexcept {
@@ -17,6 +25,11 @@ constexpr const char* toString(ErrorCode code) noexcept {
         case ErrorCode::None:            return "None";
         case ErrorCode::InvalidState:    return "InvalidState";
         case ErrorCode::InvalidArgument: return "InvalidArgument";
+        case ErrorCode::NotFound:        return "NotFound";
+        case ErrorCode::IoError:         return "IoError";
+        case ErrorCode::ParseError:      return "ParseError";
+        case ErrorCode::AccessDenied:    return "AccessDenied";
+        case ErrorCode::TooLarge:        return "TooLarge";
     }
     return "Unknown";
 }

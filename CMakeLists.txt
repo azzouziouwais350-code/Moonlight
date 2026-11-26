@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.21)
 
 project(MOONLIGHT
-    VERSION 0.1.0
+    VERSION 0.2.0
     DESCRIPTION "Independent engine reimplementation project (C++20) - foundation release"
     LANGUAGES CXX)
 
@@ -47,3 +47,6 @@ endif()
 
 add_subdirectory(engine)
 add_subdirectory(tools)
+if(MOONLIGHT_BUILD_TESTS)
+    add_subdirectory(tests)
+endif()
