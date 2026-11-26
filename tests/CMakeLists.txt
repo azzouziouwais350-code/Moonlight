@@ -30,3 +30,5 @@ moonlight_add_test(moonlight_core_test core/core_test.cpp moonlight::core)
 moonlight_add_test(moonlight_logger_test core/logger_test.cpp moonlight::core)
 moonlight_add_test(moonlight_platform_test platform/platform_test.cpp
     moonlight::platform moonlight_test_doubles)
+moonlight_add_test(moonlight_config_test core/config_test.cpp
+    moonlight::platform moonlight_test_doubles)

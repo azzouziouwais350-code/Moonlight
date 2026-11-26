@@ -4,6 +4,7 @@
 # peuvent s'appuyer sur le systeme.
 
 add_library(moonlight_platform STATIC
+    config_io.cpp
     file_util.cpp
     host_clock.cpp
     host_filesystem.cpp)

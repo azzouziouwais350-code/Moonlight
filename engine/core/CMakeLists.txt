@@ -10,6 +10,7 @@ configure_file(
     @ONLY)
 
 add_library(moonlight_core STATIC
+    config.cpp
     engine.cpp
     log.cpp
     log_sinks.cpp)
