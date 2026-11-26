@@ -4,23 +4,23 @@
 
 **MOONLIGHT** est un projet de réimplémentation indépendante de *Zero: Tsukihami no Kamen* (Project Zero 4, version japonaise Wii, identifiant `R4ZJ01`), destiné à devenir une application mobile Android puis iOS, avec un moteur C++ réimplémenté.
 
-> **Version 0.1.0 : fondation technique uniquement.**
-> Ce dépôt contient un squelette de moteur (cycle de vie, logs, gestion d'erreurs) et un test de fumée.
-> **Le jeu n'est pas jouable et aucun système de jeu n'existe encore** (ni rendu, ni audio, ni entrées, ni chargement de ressources).
+> **Version 0.2.0 : architecture centrale (fondations techniques).**
+> Ce dépôt contient la configuration, un gestionnaire de ressources, une couche d'abstraction de plateforme, un logger structuré et un squelette de moteur, avec leurs tests.
+> **Le jeu n'est pas jouable et aucun système de jeu n'existe** : ni rendu, ni audio, ni entrées, ni lecture ou décodage des données du jeu. Le projet n'est pas compatible avec le jeu original.
 
 ## Aspects légaux
 
 - MOONLIGHT ne contient et ne distribue **aucun fichier du jeu original** ni aucune ressource protégée.
-- Le joueur devra fournir **sa propre copie** du jeu (dump personnel). Les extensions de données courantes sont ignorées par `.gitignore` pour éviter tout ajout accidentel.
+- Le joueur devra fournir **sa propre copie** du jeu (dump personnel). Les extensions de données courantes sont ignorées par `.gitignore`, et un test CTest (`moonlight_no_game_data_check`) refuse les dumps et les gros fichiers pour éviter tout ajout accidentel.
 - Projet indépendant, sans lien avec les ayants droit du jeu. [Dusklight](https://github.com/TwilitRealm/dusklight) sert uniquement d'inspiration architecturale ; aucun code n'en est repris.
 
 ## Prérequis
 
 | Outil | Version testée |
 |---|---|
-| Compilateur C++20 (GCC ou Clang) | GCC 13.3, Clang 18.1 |
-| CMake | ≥ 3.21 (testé avec 3.28) |
-| Ninja | 1.11 |
+| Compilateur C++20 (GCC ou Clang) | GCC 13.3 et 14.2, Clang 18.1 |
+| CMake | ≥ 3.21 (testé avec 3.28 et 3.31) |
+| Ninja | 1.11 et 1.13 |
 
 Sur Ubuntu / Debian (y compris GitHub Codespaces) :
 
@@ -36,7 +36,7 @@ Avec les presets fournis (recommandé) :
 ```bash
 cmake --preset debug          # configure avec Ninja dans build/debug
 cmake --build --preset debug  # compile
-ctest --preset debug          # lance le test de fumée via CTest
+ctest --preset debug          # lance tous les tests
 ```
 
 Presets disponibles : `debug`, `release`, `debug-sanitize` (AddressSanitizer + UBSan). Les presets activent `MOONLIGHT_WARNINGS_AS_ERRORS`.
@@ -49,28 +49,55 @@ cmake --build build
 ctest --test-dir build --output-on-failure
 ```
 
-Exécuter directement le test de fumée :
+Tests enregistrés dans CTest (9) : `moonlight_smoke_test`, `moonlight_core_test`, `moonlight_logger_test`, `moonlight_platform_test`, `moonlight_config_test`, `moonlight_resource_test`, `moonlight_layering_check`, `moonlight_no_game_data_check`, `moonlight_example_compose`. Détail de ce que chacun couvre dans [`docs/architecture.md`](docs/architecture.md#8-tests).
+
+Exécuter directement le test de fumée (hérité de la 0.1.0, inchangé) :
 
 ```bash
 ./build/debug/tools/moonlight_smoke_test
 ```
 
-Sortie attendue (les logs vont sur stderr) :
-
 ```
-MOONLIGHT 0.1.0 - smoke test
+MOONLIGHT 0.2.0 - smoke test
 42 check(s), 0 failure(s)
 RESULT: PASS
+```
+
+Exemple de composition des modules (configuration → logs → montage des données de l'utilisateur → moteur) :
+
+```bash
+./build/debug/tools/moonlight_example_compose [chemin/vers/moonlight.ini]
 ```
 
 ### Options CMake
 
 | Option | Défaut | Effet |
 |---|---|---|
-| `MOONLIGHT_BUILD_TESTS` | `ON` | Compile le test de fumée et l'enregistre dans CTest |
+| `MOONLIGHT_BUILD_TESTS` | `ON` | Compile les tests, l'exemple et les contrôles, et les enregistre dans CTest |
 | `MOONLIGHT_WARNINGS_AS_ERRORS` | `OFF` (`ON` dans les presets) | Les avertissements deviennent des erreurs |
 
 Les builds in-source sont refusés par CMake.
+
+## Configuration
+
+Fichier texte de type INI, strict (une clé inconnue, un doublon ou une valeur invalide est une erreur avec numéro de ligne). Toutes les clés sont optionnelles :
+
+```ini
+[log]
+level = info          ; trace | debug | info | warning | error
+format = text         ; text | json
+file =                ; vide = stderr
+
+[paths]
+game_data_dir =       ; dossier de VOS données de jeu (vide = non configuré)
+mods_dir = mods
+saves_dir = saves
+
+[engine]
+max_frame_delta_seconds = 0.25
+```
+
+Un fichier absent donne les valeurs par défaut ; un fichier présent mais invalide n'est **jamais** remplacé silencieusement par les valeurs par défaut. Voir `engine/core/config.hpp`.
 
 ## Intégration continue (CI)
 
@@ -89,7 +116,7 @@ Chaque combinaison est indépendante (`fail-fast: false`) : un échec n'en masqu
 
 - **Pas d'ARM64 :** aucun runner ARM64 n'est utilisé ; la compatibilité ARM64 n'est ni testée ni garantie.
 - **Pas d'Android ni d'iOS :** la CI ne compile ni projet Gradle, ni NDK, ni JNI, ni Vulkan, ni Metal (ils n'existent pas encore). Un CI vert ne dit **rien** sur Android.
-- **Pas de test de jeu :** seul le squelette du moteur (`engine/core`) est testé, via le test de fumée.
+- **Pas de test de jeu :** le jeu n'existe pas ; seuls les modules de base (`core`, `platform`, `assets`) sont testés.
 - **Pas de Windows ni de macOS.**
 - GCC 14 et Clang 18 sont les versions fournies par l'image `ubuntu-24.04` au moment de l'écriture ; si GitHub change cette image, la matrice devra être ajustée.
 
@@ -101,37 +128,43 @@ cmake --build --preset release
 ctest --preset release
 ```
 
-(Les presets écrivent dans `build/<preset>` : supprimez ce dossier entre deux compilateurs différents.)
+(Les presets écrivent dans `build/<preset>` : supprimez ce dossier entre deux compilateurs différents. Le job Clang + sanitizers demande le paquet `libclang-rt-18-dev`.)
 
 ## Structure du dépôt
 
 ```
-engine/        moteur C++ (seul engine/core contient du code en 0.1.0)
-  core/        cycle de vie (Engine), logs (Logger), erreurs (Status), version
-  graphics/ audio/ input/ platform/ game/ assets/ localization/ saves/ mods/
+engine/        moteur C++ : une bibliothèque statique par module
+  core/        cycle de vie (Engine), logs (Logger), erreurs (Status, Result), configuration
+  platform/    interfaces système (IFileSystem, IClock) + implémentation hôte + config_io
+  assets/      ResourceManager (chemins virtuels, montages, résolution sûre)
+  graphics/ audio/ input/ game/ localization/ saves/ mods/
                pas encore implémentés : un README.md par dossier indique son statut
 android/       projet Android (non démarré)
 ios/           projet iOS (non démarré)
-tools/         outils de développement ; contient le test de fumée
+tests/         tests unitaires et aides de test (harnais CHECK, système de fichiers en mémoire)
+tools/         test de fumée, exemple de composition, contrôles (couches, données de jeu)
 docs/          documentation (architecture.md)
 ```
 
-Détails dans [`docs/architecture.md`](docs/architecture.md).
+Dépendances entre modules : `assets` → `platform` → `core`, vérifiées automatiquement par `moonlight_layering_check`. Détails, décisions d'architecture et sécurité des chemins dans [`docs/architecture.md`](docs/architecture.md).
 
-## Ce qui est implémenté en 0.1.0
+## Ce qui est implémenté en 0.2.0
 
-- Configuration CMake (C++20, Ninja, presets, avertissements stricts, garde-fou in-source).
-- `Engine` : `initialize()`, `update(dt)`, `shutdown()` avec validation des transitions d'état et des arguments.
-- `Logger` : niveaux, catégories, formatage `printf` vérifié par le compilateur, thread-safe, destination remplaçable (sink).
-- `Status` / `ErrorCode` : erreurs explicites, sans exceptions.
-- Test de fumée (42 vérifications) enregistré dans CTest.
+- **Configuration :** structure typée, valeurs par défaut, analyseur INI strict, validation, sérialisation exacte, chargement et sauvegarde sûre (écriture temporaire puis renommage).
+- **Resource Manager :** chemins virtuels, dossiers montés avec priorité, refus de la traversée de chemins (`..`, chemins absolus) et des évasions par liens symboliques, échec fermé, lecture bornée.
+- **Platform Abstraction Layer :** `IFileSystem` et `IClock` sans aucune API système dans les interfaces ; implémentation hôte testée sous Linux ; doubles de test (système de fichiers en mémoire, horloge manuelle).
+- **Logger :** niveaux, messages structurés (clés/valeurs), formats texte et JSON Lines, sorties `stderr`, fichier ou personnalisée.
+- Hérité de la 0.1.0 et inchangé : `Engine` (`initialize()`, `update(dt)`, `shutdown()`), `Status`/`ErrorCode`, CI GitHub Actions. Aucune API publique de la 0.1.x n'est retirée (voir « Compatibilité » dans l'architecture).
 
-## Limitations connues (0.1.0)
+## Limitations connues (0.2.0)
 
-- **Aucun jeu :** rien du jeu original n'est lu, décodé ni exécuté. Aucune ressource n'est chargée.
-- **Pas de rendu, d'audio, d'entrées, de sauvegardes, de langues ni de mods :** les dossiers correspondants sont des emplacements documentés, sans code.
-- **Android et iOS non démarrés :** aucun projet Gradle, aucun code JNI, aucun backend Vulkan ou Metal. La compatibilité Vulkan reste à vérifier.
-- **Plateformes vérifiées :** Ubuntu 24.04 sur x86-64 (GCC 13/14 et Clang 18, Debug, Release, ASan/UBSan), en local et par la CI (voir plus haut). **Non vérifié** : Linux ARM64, et GitHub Codespaces lui-même (même famille d'OS, mais l'exécution n'y a pas été testée).
-- **La CI ne couvre que x86-64 et le moteur de base** (voir « Ce que la CI ne valide pas »).
-- Le moteur n'est pas thread-safe (seul `Logger` l'est).
+- **Aucun jeu :** rien du jeu original n'est lu, décodé ni exécuté. Le `ResourceManager` ne fait que localiser et lire des octets dans des dossiers fournis par l'utilisateur ; aucun format du jeu n'est interprété.
+- **`Engine` n'utilise pas encore** la configuration ni le gestionnaire de ressources (intégration prévue pour la 0.3.0).
+- **Pas de rendu, d'audio, d'entrées, de sauvegardes de jeu, de langues ni de mods :** les dossiers correspondants sont des emplacements documentés, sans code.
+- **Android et iOS non démarrés :** aucun projet Gradle, aucun code JNI, aucun backend Vulkan ou Metal. La compatibilité Vulkan reste à vérifier. Les interfaces de `platform` sont conçues pour accueillir ces portages, mais **la lecture des assets d'un APK n'est pas résolue** (voir l'architecture).
+- **Plateformes vérifiées :** Ubuntu 24.04 sur x86-64. **Non vérifié :** Linux ARM64, GitHub Codespaces lui-même, Windows, macOS.
+- **Sécurité des chemins :** le `ResourceManager` ne protège pas contre une modification **concurrente** du contenu d'un dossier monté entre le contrôle et la lecture (course TOCTOU) ; les dossiers montés doivent être de confiance.
+- Le moteur n'est pas thread-safe (seul `Logger` l'est). Pas de cache de ressources, pas de rechargement à chaud de la configuration.
 - Aucune compatibilité d'API ou d'ABI n'est promise avant la 1.0.
+
+Liste complète des limitations dans [`docs/architecture.md`](docs/architecture.md#11-limitations-techniques-connues-020).
